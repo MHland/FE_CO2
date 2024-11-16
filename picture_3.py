@@ -9,7 +9,7 @@ trendy_name_runoff = ['CABLE_POP', 'CLASSIC', 'CLM5', 'DLEM', 'IBIS', 'ISAM',
                           'SDGVM', 'VISIT_NIES']
 trendy_name = ['CABLE-POP', 'CLASSIC', 'CLM5.0', 'DLEM', 'IBIS', 'ISAM', 'ISBA-CTRIP', 'JSBACH',
                 'JULES', 'LPJ-GUESS', 'LPX-Bern', 'ORCHIDEE', 'SDGVM', 'VISIT-NIES']
-data = pd.read_excel(r"dataset\手动整合的图2数据_1116.xlsx")
+data = pd.read_excel(r"dataset\data_set_1116_catchments.xlsx")
 P = np.ravel(data['P'])
 ET = np.ravel(data['ET_yang'])
 TEMP = np.ravel(data['Temp'])
