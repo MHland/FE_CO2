@@ -3,139 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pymannkendall as mk
 from scipy.stats import pearsonr
-# 把数据的年份信息重新提取一下
-def get_years():
-    data = pd.read_csv(r"dataset/observation_based_approach_result.csv")
-    FileName = data['FileName']
-    Area = data['Area']
-    Name = data['Name']
-    year_data = pd.DataFrame([])
-    for i in range(len(Area)):
-        if Area[i]<=200000:
-            d = pd.read_csv(r"dataset/small_basins_data_Yearly/"+FileName[i]+r".csv")
-            year = np.ravel(d['Year'])
-            q_day = np.ravel(d['n_flow'])
-            # q = np.ravel(d['Flow_mm'])
-            q_day1 = q_day[year>1980]
-            # q1 = q[year>1980]
-            y1 = year[year>1980]
-            q_day2 = q_day1[y1<2021]
-            # q2 = q1[y1<2021]
-            k = np.ravel(np.zeros((40, 1)))
-            k[q_day2>=365] = 1
-            year_data[Name[i]] = k
-    year_data.index = [1981+i for i in range(40)]
-    # year_data.to_csv("dataset/year.csv")
-    year_data.to_csv("dataset/year_1116.csv")
-# get_years()
-
-# 调出多年平均的降水和蒸散发
-def get_p_et():
-    data = pd.read_csv(r"dataset/observation_based_approach_result.csv")
-    FileName = data['FileName']
-    Area = data['Area']
-    Name = data['Name']
-    p_et_data = pd.DataFrame([])
-    for i in range(len(Area)):
-        if Area[i]<=200000:
-            d = pd.read_csv(r"dataset/small_basins_data_Yearly/"+FileName[i]+r".csv")
-            year = np.ravel(d['Year'])
-            p = np.ravel(d['P_MSWEP'])
-            et = np.ravel(d['PET_FAO_CO2'])
-            p1 = p[year>1980]
-            et1 = et[year>1980]
-            y1 = year[year>1980]
-            p2 = p1[y1<2021]
-            et2 = et1[y1<2021]
-            P = np.nanmean(p2)
-            ET = np.nanmean(et2)
-            p_et_data[Name[i]] = [P, ET]
-    p_et_data.index = ['P', 'ET_yang']
-    # p_et_data.to_csv("dataset/p_et.csv")
-    p_et_data.to_csv("dataset/p_et_1116.csv")
-# get_p_et()
-
-# 调出多年气温相关
-def get_temp():
-    data = pd.read_csv(r"dataset/observation_based_approach_result.csv")
-    FileName = data['FileName']
-    Area = data['Area']
-    Name = data['Name']
-    t_data = pd.DataFrame([])
-    for i in range(len(Area)):
-        if Area[i]<=200000:
-            d = pd.read_csv(r"dataset/small_basins_data_Yearly/"+FileName[i]+r".csv")
-            year = np.ravel(d['Year'])
-            t = np.ravel(d['Temp'])
-            tmax = np.ravel(d['Tmax'])
-            tmin = np.ravel(d['Tmin'])
-            t1 = t[year>1980]
-            tmax1 = tmax[year > 1980]
-            tmin1 = tmin[year > 1980]
-            y1 = year[year>1980]
-            t2 = t1[y1<2021]
-            tmax2 = tmax1[y1 < 2021]
-            tmin2 = tmin1[y1 < 2021]
-            T = np.nanmean(t2)
-            Tmax = np.nanmean(tmax2)
-            Tmin = np.nanmean(tmin2)
-            Td = Tmax-Tmin
-            t_data[Name[i]] = [T, Tmax, Tmin, Td]
-    t_data.index = ['Temp', 'Tmax', 'Tmin', 'Tdet']
-    # p_et_data.to_csv("dataset/p_et.csv")
-    t_data.to_csv("dataset/temp_1116.csv")
-# get_temp()
-
-# 把TRENDY数据的趋势都算出来
-def get_trendy_trend():
-    data = pd.read_csv(r"dataset/observation_based_approach_result.csv")
-    Name = data['Name']
-    # Name = pd.read_excel(r"dataset/name_1034.xlsx")['Name']
-    year = pd.read_csv(r"dataset/year_1116.csv")
-    trendy_name_runoff = ['CABLE_POP', 'CLASSIC', 'CLM5', 'DLEM', 'IBIS', 'ISAM',
-                          'ISBA_CTRIP', 'JSBACH', 'JULES', 'LPJ_GUESS', 'LPX_Bern', 'ORCHIDEE',
-                          'SDGVM', 'VISIT_NIES']
-    S = np.zeros((len(trendy_name_runoff), len(Name)))
-    for i in range(len(trendy_name_runoff)):
-        d = pd.read_excel(r"./dataset/streamflow driven by CO2 from TRENDYS/"+trendy_name_runoff[i]+"_CO2_1116.xlsx")
-        for j in range(len(Name)):
-            q = np.array(d[str(Name[j])])
-            y = np.array(year[str(Name[j])])
-            q = np.float64(q)
-            q[y==0] = np.NaN
-            s = mk.original_test(q).slope
-            S[i, j] = s
-    S = pd.DataFrame(S, index=trendy_name_runoff, columns=Name)
-    # S.to_csv("dataset/TRENDY_CO2_trend.csv")
-    S.to_csv("dataset/TRENDY_CO2_trend_1116.csv")
-# get_trendy_trend()
-
-def get_fullt_differential_trend():
-    data = pd.read_csv(r"dataset/observation_based_approach_result.csv")
-    FileName = data['FileName']
-    Area = data['Area']
-    Name = data['Name']
-    k_co2 = data['PET_FAO_YANG_par_CO2']
-    s_data = pd.DataFrame([])
-    for i in range(len(Area)):
-        if Area[i]<=100000:
-            d = pd.read_csv(r"dataset/small_basins_data_Yearly/" + FileName[i] + r".csv")
-            year = np.ravel(d['Year'])
-            q_day = np.ravel(d['n_flow'])
-            q = np.ravel(d['Flow_mm'])
-            q_day1 = q_day[year>1980]
-            q1 = q[year>1980]
-            y1 = year[year>1980]
-            q_day2 = q_day1[y1<2021]
-            q2 = q1[y1<2021]
-            q2[q_day2<365] = np.NaN
-            s = mk.original_test(q2).slope
-            s_co2 = s * k_co2[i]
-            s_data[Name[i]] = [s_co2, s]
-    s_data.index = ['Q_CO2_trend', 'Q_trend']
-    # s_data.to_csv("dataset/fully_differential_trend.csv")
-    s_data.to_csv("dataset/fully_differential_trend_1116.csv")
-# get_fullt_differential_trend()
 
 trendy_name_runoff = ['CABLE_POP', 'CLASSIC', 'CLM5', 'DLEM', 'IBIS', 'ISAM',
                           'ISBA_CTRIP', 'JSBACH', 'JULES', 'LPJ_GUESS', 'LPX_Bern', 'ORCHIDEE',
@@ -222,10 +89,6 @@ def prho(ax, x, y, p, markersize=10, marker='v', markeredgewidth=1.5, markerface
 
 def p2(ax, RHO1, P1):
     color = ['red', 'orange', 'yellow', 'white']
-    # for i in range(4):
-    #     plt.bar(x=0.125+i*0.25, height=21, bottom=-1, width=0.25, color=color[3-i], alpha=0.1)
-    # for i in range(4):
-    #     plt.bar(x=-0.125-i*0.25, height=21, bottom=-1, width=0.25, color=color[3-i], alpha=0.1)
     plt.bar(x=-0.85, height=21, bottom=-1, width=0.3, color=color[1], alpha=0.2)
     plt.bar(x=0.85, height=21, bottom=-1, width=0.3, color=color[1], alpha=0.2)
     prho(ax, RHO1[0], 16, P1[0], markersize=10, marker='v', markeredgewidth=1.5,
@@ -286,47 +149,35 @@ handles1, labels1 = ax.get_legend_handles_labels()
 
 plt.xticks(fontfamily='serif', fontsize=10)
 plt.yticks([-0.4+0.1*i for i in range(13)],['']*13,fontfamily='serif', fontsize=10)
-# plt.xlim([0, 240])
 plt.ylim([-0.4, 0.8])
-# plt.ylabel("Q driven by CO$_2$ (mm yr$^{-1}$)", fontfamily='serif', fontsize=12)
 plt.xlabel("Aridity [PET/P] ($-$)", fontfamily='serif', labelpad=5, fontsize=12)
 plt.title("Aridity", fontfamily='serif', fontsize=15)
 plt.title("b", loc='left', fontfamily='serif', fontsize=18, weight='bold')
 
 ax = fig.add_subplot(243)
-# plt.title("a", loc="left", pad=10, fontfamily='serif', weight="bold", fontsize=20)
 plt.rcParams['xtick.direction'] = 'inout'
 plt.rcParams['ytick.direction'] = 'inout'
-# ax.spines[['right', 'top']].set_visible(False)
 colors2 = ['#BAD5E8', '#FFD9B5', '#B9D6B3', '#F1BDBF', '#DED1EC']
 ax.grid(axis='y', ls="--", lw=1, c='k', alpha=0.25)
 
 RHO3, P3 = p1(ax, TEMP, 22)
-# handles1, labels1 = ax.get_legend_handles_labels()
 
 plt.xticks(fontfamily='serif', fontsize=10)
 plt.yticks([-0.4+0.1*i for i in range(13)],['']*13,fontfamily='serif', fontsize=10)
-# # plt.xlim([0, 240])
 plt.ylim([-0.4, 0.8])
-# plt.ylabel("Q driven by CO$_2$ (mm yr$^{-1}$)", fontfamily='serif', fontsize=12)
 plt.xlabel("T ($℃$)", fontfamily='serif', labelpad=5, fontsize=12)
 plt.title("Temperature", fontfamily='serif', fontsize=15)
 plt.title("c", loc='left', fontfamily='serif', fontsize=18, weight='bold')
 
 ax = fig.add_subplot(245)
-# plt.title("a", loc="left", pad=10, fontfamily='serif', weight="bold", fontsize=20)
 plt.rcParams['xtick.direction'] = 'inout'
 plt.rcParams['ytick.direction'] = 'inout'
-# ax.spines[['right', 'top']].set_visible(False)
 colors2 = ['#BAD5E8', '#FFD9B5', '#B9D6B3', '#F1BDBF', '#DED1EC']
-# ax.grid(axis='x', ls="--", lw=1, c='k', alpha=0.25)
 p2(ax, RHO1, P1)
 plt.xticks(fontfamily='serif', fontsize=10)
 plt.yticks([16]+[14-i for i in range(14)], ['Observation-\n-based dataset']+trendy_name, fontfamily='serif', fontsize=10)
 plt.xlim([-1.1, 1.1])
 plt.ylim([0, 17])
-# plt.ylabel("Q driven by CO$_2$ (mm yr$^{-1}$)", fontfamily='serif', fontsize=12)
-# plt.xlabel("Aridity [PET/P] ($-$)", fontfamily='serif', labelpad=5, fontsize=12)
 plt.xlabel("Rank correlation $\\rho_s$ ($-$)", fontfamily='serif', labelpad=3, fontsize=11)
 plt.title("Precipitation", fontfamily='serif', fontsize=15)
 plt.title("e", loc='left', fontfamily='serif', fontsize=18, weight='bold')
