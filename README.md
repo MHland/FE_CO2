@@ -13,7 +13,7 @@ This is the data sharing module for the submitted article --- “Functional rela
 
 ## Figure
 
-The source code for the three main images in the text is shown in  **Figure num.py**.
+The source code for the three main images in the text is shown in  **picture_num.py**.
 
 <br/>
 
